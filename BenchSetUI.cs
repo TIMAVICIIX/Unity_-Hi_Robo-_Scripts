@@ -1,10 +1,13 @@
 using UnityEngine;
+//using UnityEngine.UIElements;
 
 public class BenchSetUI : MonoBehaviour
 {
-    public GameObject Set01;
+    public GameObject set01;
+    //get set01 GameObject,it's public and can push it in the component
+    
 
-    public GameObject Set02;
+    public GameObject set02;
 
     private Animator _animator01;
 
@@ -12,33 +15,32 @@ public class BenchSetUI : MonoBehaviour
 
     private Animator _player;
 
-    private bool Judge_F;
-
-    private bool Push_F;
+    private bool _judgeF;
+    
     //Min Set Position;
-    float Temp_X;
-    float Temp_Y;
+    private float _tempX;
+    private float _tempY;
 
-    private Collider2D other_Alter;
+    private Collider2D _otherAlter;
     
     Rigidbody2D _rigidbody2D;
 
     // Start is called before the first frame update
     void Start()
     {
-        Set01.SetActive(false);
-        Set02.SetActive(false);
+        set01.SetActive(false);
+        set02.SetActive(false);
 
-        _animator01 =Set01.GetComponent<Animator>();
-        _animator02 = Set02.GetComponent<Animator>();
+        _animator01 =set01.GetComponent<Animator>();
+        _animator02 = set02.GetComponent<Animator>();
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.name == "Robo")
         {
-            Set01.SetActive(true);
-            Set02.SetActive(true);
+            set01.SetActive(true);
+            set02.SetActive(true);
         }
     }
 
@@ -46,8 +48,8 @@ public class BenchSetUI : MonoBehaviour
     {
         if (other.name == "Robo")
         {
-            Set01.SetActive(false);
-            Set02.SetActive(false);
+            set01.SetActive(false);
+            set02.SetActive(false);
         }
     }
 
@@ -60,14 +62,14 @@ public class BenchSetUI : MonoBehaviour
         {
             //Transform the Object
 
-            other_Alter = other;
-            _rigidbody2D = other_Alter.GetComponent<Rigidbody2D>();
+            _otherAlter = other;
+            _rigidbody2D = _otherAlter.GetComponent<Rigidbody2D>();
             
             //Sit down again within range
-            if (!Judge_F)
+            if (!_judgeF)
             {
-                Set01.SetActive(true);
-                Set02.SetActive(true);
+                set01.SetActive(true);
+                set02.SetActive(true);
             }
 
             //judge Light UI Button Method;
@@ -93,27 +95,28 @@ public class BenchSetUI : MonoBehaviour
              * 4.Step
              *Light the position button with small absolute Vector Value
              */
-            float Get_X01 = Mathf.Abs(Set01.transform.position.x-other.transform.position.x);
-            float Get_Y01 = Mathf.Abs(Set01.transform.position.y-other.transform.position.y);
-            float Get_X02 = Mathf.Abs(Set02.transform.position.x-other.transform.position.x);
-            float Get_Y02 = Mathf.Abs(Set02.transform.position.y-other.transform.position.y);
 
-            float Vector_01 = Mathf.Sqrt(Get_X01 * Get_X01 + Get_Y01 * Get_Y01);
-            float Vector_02 = Mathf.Sqrt(Get_X02 * Get_X02 + Get_Y02 * Get_Y02);
+            float getX01 = Mathf.Abs(set01.transform.position.x-other.transform.position.x);
+            float getY01 = Mathf.Abs(set01.transform.position.y-other.transform.position.y);
+            float getX02 = Mathf.Abs(set02.transform.position.x-other.transform.position.x);
+            float getY02 = Mathf.Abs(set02.transform.position.y-other.transform.position.y);
+
+            float vector01 = Mathf.Sqrt(getX01 * getX01 + getY01 * getY01);
+            float vector02 = Mathf.Sqrt(getX02 * getX02 + getY02 * getY02);
             
-            if (Vector_01<Vector_02)
+            if (vector01<vector02)
             {
                 _animator01.SetBool("Closer",true);
                 _animator02.SetBool("Closer",false);
-                Temp_X = Set01.transform.position.x;
-                Temp_Y = Set01.transform.position.y;
+                _tempX = set01.transform.position.x;
+                _tempY = set01.transform.position.y;
             }
             else
             {
                 _animator02.SetBool("Closer",true);
                 _animator01.SetBool("Closer",false);
-                Temp_X = Set02.transform.position.x;
-                Temp_Y = Set02.transform.position.y;
+                _tempX = set02.transform.position.x;
+                _tempY = set02.transform.position.y;
             }
             
            
@@ -128,11 +131,8 @@ public class BenchSetUI : MonoBehaviour
     void Update()
     {
         //Detect the Pressing and repressing of the F key
-        Push_F = Input.GetKeyDown(KeyCode.F);
-        bool Push_F_transform = Push_F;
-        
         //Don't Move this Method!!!!
-        Seat_With_Player(Push_F_transform);
+        Seat_With_Player(Input.GetKeyDown(KeyCode.F));
        
     }
 
@@ -142,49 +142,50 @@ public class BenchSetUI : MonoBehaviour
      * performance issues of Method "OnTriggerStay()" didn't allow it to run Stably.So I mounted
      * it into Method "Update()|FixedUpdate()".
      */
-    void Seat_With_Player(bool Push_F_transform)
+    void Seat_With_Player(bool pushFTransform)
     {
         //Determine the odd and even times F is pressed
-        if (Push_F_transform)
+        if (pushFTransform)
         {
-            if (Judge_F)
+            if (_judgeF)
             {
-                Judge_F = false;
+                _judgeF = false;
                 //Debug.Log("Off");
             }
             else
             {
-                Judge_F = true;
+                _judgeF = true;
                 //Debug.Log("Sit");
             }
 
 
 
-            if (Judge_F)
+            if (_judgeF)
             {
                 //UI disappear
-                Set01.SetActive(false);
-                Set02.SetActive(false);
+                set01.SetActive(false);
+                set02.SetActive(false);
                 
                 //Let Player on the Set,Freeze All of Rotation and Position
-                other_Alter.transform.position = new Vector3(Temp_X, Temp_Y, 0);
+                _otherAlter.transform.position = new Vector3(_tempX, _tempY, 0);
                 _player.SetBool("Set", true);
                 _rigidbody2D.constraints = RigidbodyConstraints2D.FreezePositionX |
                                            RigidbodyConstraints2D.FreezePositionY |
                                            RigidbodyConstraints2D.FreezeRotation;
             }
 
-            if (!Judge_F)
+            if (!_judgeF)
             {
-                Set01.SetActive(true);
-                Set01.SetActive(true);
+                set01.SetActive(true);
+                set01.SetActive(true);
                 
                 //Let Player out of the Sit and Thaw The Constraints X,Y,Freeze Rotation Z;
                 _player.SetBool("Set", false);
-                other_Alter.transform.position = new Vector3(Temp_X, Temp_Y + 0.5f, 0);
+                _otherAlter.transform.position = new Vector3(_tempX, _tempY + 0.5f, 0);
                 _rigidbody2D.constraints = RigidbodyConstraints2D.FreezeRotation;
 
             }
         }
     }
 }
+
